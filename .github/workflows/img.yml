@@ -1,0 +1,47 @@
+name: Deploy Image to Docker Hub
+
+on:
+  push:
+    branches: ["master"]
+  workflow_dispatch:
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Login to ACR
+        uses: aliyun/acr-login@v1
+        with:
+          login-server: crpi-f3ej1gd8qoipmpon.cn-shanghai.personal.cr.aliyuncs.com
+          username: nooooru@gmail.com
+          region-id: cn-shanghai
+          password: ${{ secrets.ALIYUN_ACR_PASS }}
+
+      - name: Set up Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.23'
+          cache: true
+      - name: Run Go Commands
+        run: |
+          go mod download
+          go build -v .
+
+      - name: Build Image
+        uses: docker/build-push-action@v5
+        with:
+          context: '.'
+          file: './Dockerfile'
+          push: true
+          tags: crpi-f3ej1gd8qoipmpon.cn-shanghai.personal.cr.aliyuncs.com/drew-xiu-tools/go-starter:latest
+
+      - name: Telegram Notifier
+        uses: akeylimepie/telegram-action@main
+        with:
+          token: ${{ secrets.LOCAL_TELEBOT_TOKEN }}
+          chat_id: -1002176777438
+          text: |
+              Build Finished: ${{github.repository}} ${{github.ref_name}}

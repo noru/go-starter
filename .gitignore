@@ -1,0 +1,10 @@
+.DS_Store
+*.log
+
+# Go specific
+*.test
+*.out
+/vendor/
+/bin/
+/dist/
+go.work
